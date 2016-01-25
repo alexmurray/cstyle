@@ -1,0 +1,13 @@
+[Options]
+pointer_prefix: p
+prefer_goto: true
+
+[Rules]
+struct_decl: _[A-Z][A-Za-z0-9_]+
+union_decl: [A-Z][A-Za-z0-9_]+
+enum_decl: e[A-Z][A-Za-z0-9_]+
+function_decl: [A-Z][A-Za-z0-9_]+
+var_decl: [A-Z][A-Za-z0-9_]+
+parm_decl: [A-Z][A-Za-z0-9_]+
+typedef_decl: t[A-Z][A-Za-z0-9_]+
+label_stmt: [A-Z][A-Za-z0-9_]+
