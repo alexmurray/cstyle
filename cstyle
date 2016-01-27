@@ -83,7 +83,7 @@ class CStyle(object):
 
             for (Node, Reason) in InvalidNodes:
                 sys.stderr.write(('{File}:{Line}:{Column}: "{Name}" '
-                                  'is invalid: {Reason})\n').
+                                  'is invalid: {Reason}\n').
                                  format(File=Node.location.file.name,
                                         Line=Node.location.line,
                                         Column=Node.location.column,
