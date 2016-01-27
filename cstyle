@@ -32,7 +32,9 @@ class CStyle(object):
                            Node.type.spelling.count('[')) > 0):
             Prefix = self.Options['pointer_prefix']
             Type = Node.type.spelling
-            if self.Options['pointer_prefix_repeat']:
+            Count = len(Prefix)
+            if ('pointer_prefix_repeat' in self.Options and
+                self.Options['pointer_prefix_repeat']):
                 Count = Type.count('*') + Type.count('[')
                 Prefix = Prefix * Count
             Invalid = not Name.startswith(Prefix)
