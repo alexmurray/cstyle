@@ -28,13 +28,16 @@ class CStyle(object):
         if (self.Options['pointer_prefix'] and
             (Node.kind == clang.cindex.CursorKind.VAR_DECL or
              Node.kind == clang.cindex.CursorKind.PARM_DECL) and
-            Node.type and Node.type.spelling.count('*') > 0):
+            Node.type and (Node.type.spelling.count('*') +
+                           Node.type.spelling.count('[')) > 0):
             Prefix = self.Options['pointer_prefix']
             Type = Node.type.spelling
-            Invalid = not Name.startswith(Prefix * Type.count('*'))
+            if self.Options['pointer_prefix_repeat']:
+                Count = Type.count('*') + Type.count('[')
+                Prefix = Prefix * Count
+            Invalid = not Name.startswith(Prefix)
             if Invalid:
-                Reason = 'Expected pointer prefix "{Prefix}"'.format(
-                    Prefix=Prefix * Type.count('*'))
+                Reason = 'Expected pointer prefix "{Prefix}"'.format(Prefix=Prefix)
             else:
                 # strip n prefix chars
                 Name = Name[Type.count('*'):]

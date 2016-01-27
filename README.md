@@ -24,6 +24,11 @@ The configuration file supports some basic options in the `Options` section:
    exist at the start of the variable name. To disable simply remove this
    configuration option from the configuration file.
 
+ * `pointer_prefix_repeat` - If set to `true` (and `pointer_prefix` is set),
+   then the `pointer_prefix` is expected to be repeated by the depth of the
+   pointer. i.e. for the argument `char **ppArgv`, `pointer_prefix` should be
+   set to `p` and `pointer_prefix_repeat` should be `true`.
+
 Rules for naming variables are specified in the `Rules` section - these specify
 a libclang kind and the associated regular expression to validate the name. For
 instance, `var_decl` is used to specify the regular expression for all variable

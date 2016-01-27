@@ -1,5 +1,6 @@
 [Options]
 pointer_prefix: p
+pointer_prefix_repeat: true
 prefer_goto: true
 
 [Rules]
