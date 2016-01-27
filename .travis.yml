@@ -2,7 +2,7 @@ sudo: required
 dist: trusty
 
 install:
-  - sudo apt-get -qq install python-clang-3.6
+  - sudo apt-get -qq install python-clang-3.5
 
 script:
   - ./tests/runtests.sh
