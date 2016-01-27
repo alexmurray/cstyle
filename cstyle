@@ -38,6 +38,7 @@ class CStyle(object):
             Invalid = not Name.startswith(Prefix)
             if Invalid:
                 Reason = 'Expected pointer prefix "{Prefix}"'.format(Prefix=Prefix)
+                return Invalid, Reason
             else:
                 # strip n prefix chars
                 Name = Name[Type.count('*'):]
@@ -50,10 +51,12 @@ class CStyle(object):
             Invalid = self._NReturns > 1
             if Invalid:
                 Reason = 'Only 1 return statement per function (prefer_goto)'
+                return Invalid, Reason
         else:
             Invalid = (Node.kind == clang.cindex.CursorKind.GOTO_STMT)
             if Invalid:
                 Reason = 'goto considered harmful'
+                return Invalid, Reason
 
         # no point checking something which doesn't have a name (could be an
         # unnamed struct etc)
