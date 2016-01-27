@@ -43,7 +43,7 @@ class CStyle(object):
                 return Invalid, Reason
             else:
                 # strip n prefix chars
-                Name = Name[Type.count('*'):]
+                Name = Name[Count:]
 
         if self.Options['prefer_goto']:
             if Node.kind == clang.cindex.CursorKind.FUNCTION_DECL:
