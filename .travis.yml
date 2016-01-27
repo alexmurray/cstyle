@@ -1,7 +1,9 @@
 sudo: required
 dist: trusty
+language: python
 
 install:
+  - sudo apt-get update
   - sudo apt-get -qq install python-clang-3.5
 
 script:
