@@ -121,9 +121,9 @@ def Main():
         clang.cindex.Config.set_library_file(Args.libclang)
     else:
         # try and find libclang manually
-        Name = 'clang'
         for Version in ([None] + ["-3.{Minor}".format(Minor=Minor)
                                   for Minor in range(2, 8)]):
+            Name = 'clang'
             if Version is not None:
                 Name += Version
             LibName = ctypes.util.find_library(Name)
