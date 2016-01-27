@@ -81,9 +81,9 @@ class CStyle(object):
                                         Reason=Reason))
         return 1 if InvalidNodes else 0
 
-def ConfigSection(Config, Section, Defaults={}):
+def ConfigSection(Config, Section, Defaults=None):
     """Create a dict from a Section of Config"""
-    Dict = Defaults
+    Dict = {} if Defaults is None else Defaults
     for (Name, Value) in Config.items(Section):
         Dict[Name] = Value
     return Dict
