@@ -76,7 +76,7 @@ class CStyle(object):
 
     def CheckStyle(self):
         """Check Files against RulesDB and report violations to stderr"""
-        clang.cindex.Config.set_library_file(ctypes.util.find_library('clang'))
+        Errors = []
         for File in self.Files:
             Index = clang.cindex.Index.create()
             Unit = Index.parse(File)
@@ -88,12 +88,12 @@ class CStyle(object):
                     InvalidNodes.append((Node, Reason))
 
             for (Node, Reason) in InvalidNodes:
-                sys.stderr.write(('{File}:{Line}:{Column}: {Reason}\n').
+                Errors.append(('{File}:{Line}:{Column}: {Reason}\n').
                                  format(File=Node.location.file.name,
                                         Line=Node.location.line,
                                         Column=Node.location.column,
                                         Reason=Reason))
-        return 1 if InvalidNodes else 0
+        return Errors
 
 def ConfigSection(Config, Section, Defaults=None):
     """Create a dict from a Section of Config"""
@@ -143,11 +143,13 @@ def Main():
                      else Config.getboolean('Options', 'pointer_prefix_repeat'))
     PreferGoto = (False if not Config.has_option('Options', 'prefer_goto')
                   else Config.getboolean('Options', 'prefer_goto'))
-    Status = CStyle(RulesDB, Args.FILES,
+    Errors = CStyle(RulesDB, Args.FILES,
                     PointerPrefix=PointerPrefix,
                     PointerPrefixRepeat=PointerPrefixRepeat,
                     PreferGoto=PreferGoto).CheckStyle()
-    sys.exit(Status)
+    for Error in Errors:
+        sys.stderr.write(Error)
+    sys.exit(1 if len(Errors) > 0 else 0)
 
 if __name__ == '__main__':
     Main()
