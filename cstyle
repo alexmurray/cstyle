@@ -106,15 +106,31 @@ def ConfigSection(Config, Section, Defaults=None):
     return Dict
 
 def Main():
-    """Run cstyle.py"""
-    Status = 0
+    """Run cstyle"""
     Parser = argparse.ArgumentParser(description='C Style Checker')
+    Parser.add_argument('--libclang', dest='libclang',
+                        default=None,
+                        help='path to libclang.so')
     Parser.add_argument('--config', dest='config',
                         default=os.path.expanduser('~/.cstyle'),
                         help='configuration file')
     Parser.add_argument('FILES', metavar='FILE', nargs='+',
                         help='files to check')
     Args = Parser.parse_args()
+    if Args.libclang is not None:
+        clang.cindex.Config.set_library_file(Args.libclang)
+    else:
+        # try and find libclang manually
+        Name = 'clang'
+        for Version in ([None] + ["-3.{Minor}".format(Minor=Minor)
+                                  for Minor in range(2, 8)]):
+            if Version is not None:
+                Name += Version
+            LibName = ctypes.util.find_library(Name)
+            if LibName is not None:
+                clang.cindex.Config.set_library_file(LibName)
+                break
+
     Config = ConfigParser.ConfigParser()
     Config.read(Args.config)
     Rules = ConfigSection(Config, 'Rules')
