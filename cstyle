@@ -75,27 +75,29 @@ class CStyle(object):
         for File in self.Files:
             Index = clang.cindex.Index.create()
             Unit = Index.parse(File)
+            LocalNodes = [Node for Node in Unit.cursor.walk_preorder() if self.Local(Node)]
             InvalidNodes = []
-            for Node in Unit.cursor.walk_preorder():
+            for Node in LocalNodes:
                 Invalid, Reason = self.Invalid(Node)
                 if Invalid:
                     InvalidNodes.append((Node, Reason))
 
             for (Node, Reason) in InvalidNodes:
-                sys.stderr.write(('{File}:{Line}:{Column}: "{Name}" '
-                                  'is invalid: {Reason}\n').
+                sys.stderr.write(('{File}:{Line}:{Column}: {Reason}\n').
                                  format(File=Node.location.file.name,
                                         Line=Node.location.line,
                                         Column=Node.location.column,
-                                        Name=Node.spelling,
                                         Reason=Reason))
         return 1 if InvalidNodes else 0
 
 def ConfigSection(Config, Section, Defaults=None):
     """Create a dict from a Section of Config"""
     Dict = {} if Defaults is None else Defaults
-    for (Name, Value) in Config.items(Section):
-        Dict[Name] = Value
+    try:
+        for (Name, Value) in Config.items(Section):
+            Dict[Name] = Value
+    except ConfigParser.NoSectionError:
+        pass
     return Dict
 
 def Main():
