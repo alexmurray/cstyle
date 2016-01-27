@@ -10,10 +10,12 @@ import sys
 
 class CStyle(object):
     """CStyle checker"""
-    def __init__(self, Options, RulesDB, Files):
-        self.Options = Options
+    def __init__(self, RulesDB, Files, **KWArgs):
         self.RulesDB = RulesDB
         self.Files = Files
+        self.PointerPrefix = KWArgs.get('PointerPrefix', None)
+        self.PointerPrefixRepeat = KWArgs.get('PointerPrefixRepeat', False)
+        self.PreferGoto = KWArgs.get('PreferGoto', False)
         self._NReturns = 0
 
     def Local(self, Node):
@@ -26,19 +28,18 @@ class CStyle(object):
         Reason = ''
 
         Name = Node.spelling
-        if (self.Options['pointer_prefix'] and
+        if (self.PointerPrefix and
             (Node.kind == clang.cindex.CursorKind.VAR_DECL or
              Node.kind == clang.cindex.CursorKind.PARM_DECL) and
             Node.type and (Node.type.spelling.count('*') +
                            Node.type.spelling.count('[')) > 0):
-            Prefix = self.Options['pointer_prefix']
+            Prefix = self.PointerPrefix
             Type = Node.type.spelling
             Count = len(Prefix)
-            if ('pointer_prefix_repeat' in self.Options and
-                self.Options['pointer_prefix_repeat']):
+            if self.PointerPrefixRepeat:
                 Count = Type.count('*') + Type.count('[')
                 Prefix = Prefix * Count
-            Invalid = not Name.startswith(Prefix)
+                Invalid = not Name.startswith(Prefix)
             if Invalid:
                 FmtStr = '"{Name}" is invalid - expected pointer prefix "{Prefix}"'
                 Reason = FmtStr.format(Name=Name, Prefix=Prefix)
@@ -47,7 +48,7 @@ class CStyle(object):
                 # strip n prefix chars
                 Name = Name[Count:]
 
-        if self.Options['prefer_goto']:
+        if self.PreferGoto:
             if Node.kind == clang.cindex.CursorKind.FUNCTION_DECL:
                 self._NReturns = 0
             elif Node.kind == clang.cindex.CursorKind.RETURN_STMT:
@@ -114,14 +115,20 @@ def Main():
     Args = Parser.parse_args()
     Config = ConfigParser.ConfigParser()
     Config.read(Args.config)
-    Options = ConfigSection(Config, 'Options',
-                            {'pointer_prefix': None,
-                             'prefer_goto': False})
     Rules = ConfigSection(Config, 'Rules')
 
     Kinds = {Kind.name.lower(): Kind for Kind in clang.cindex.CursorKind.get_all_kinds()}
     RulesDB = {Kinds[Kind]: re.compile(Pattern) for (Kind, Pattern) in Rules.items()}
-    Status = CStyle(Options, RulesDB, Args.FILES).CheckStyle()
+    PointerPrefix = (None if not Config.has_option('Options', 'pointer_prefix')
+                     else Config.get('Options', 'pointer_prefix'))
+    PointerPrefixRepeat = (False if not Config.has_option('Options', 'pointer_prefix_repeat')
+                     else Config.getboolean('Options', 'pointer_prefix_repeat'))
+    PreferGoto = (False if not Config.has_option('Options', 'prefer_goto')
+                  else Config.getboolean('Options', 'prefer_goto'))
+    Status = CStyle(RulesDB, Args.FILES,
+                    PointerPrefix=PointerPrefix,
+                    PointerPrefixRepeat=PointerPrefixRepeat,
+                    PreferGoto=PreferGoto).CheckStyle()
     sys.exit(Status)
 
 if __name__ == '__main__':
