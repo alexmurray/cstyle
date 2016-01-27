@@ -1,0 +1,28 @@
+#!/usr/bin/env python2
+import cstyle
+import unittest
+import ConfigParser
+
+class TestCStyle(unittest.TestCase):
+    def __init__(self, Name, ExpectedErrors=None):
+        self._Name = Name
+        self._ExpectedErrors = ExpectedErrors if ExpectedErrors is not None else []
+        super(TestCStyle, self).__init__()
+
+    def runTest(self):
+        Errors = cstyle.CStyle('./tests/' + self._Name + '.conf',
+                               ['./tests/' + self._Name + '.c']).CheckStyle()
+        self.assertEqual(Errors, self._ExpectedErrors)
+
+
+if __name__ == '__main__':
+    Tests = {'0001_pointer_prefix': [],
+             '0002_pointer_prefix_repeat': [],
+             '0003_no_goto': [],
+             '0004_prefer_goto': []}
+
+    TestSuite = unittest.TestSuite()
+    for TestName in Tests:
+        TestCase = TestCStyle(TestName)
+        TestSuite.addTest(TestCase)
+    unittest.TextTestRunner().run(TestSuite)
