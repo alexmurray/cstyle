@@ -9,9 +9,12 @@ rules.
 
 ## Configuration
 
-CStyle is configured using a configuration file (see an example in config/cohda.cstyle).
+CStyle is configured using a configuration file (see an example in
+[config/cohda.cstyle](https://github.com/alexmurray/cstyle/blob/master/config/cohda.cstyle)). This
+defaults to `~/.cstyle` but can be specified using the `--config` command-line
+option.
 
-This supports some basic options:
+The configuration file supports some basic options in the `Options` section:
 
  * `prefer_goto` - If enabled, will warn when multiple `return` statements exist
    in a single function. However, if disabled will warn about *any* use of
