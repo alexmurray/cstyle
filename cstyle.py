@@ -1,20 +1,23 @@
 #!/usr/bin/env python2
 """CStyle Checker based on libclang"""
 
+import argparse
 import ConfigParser
 import clang.cindex
 import ctypes.util
+import os
 import re
+import sys
 
 # try find and set libclang manually once
 for Version in ([None] + ["-3.{Minor}".format(Minor=Minor)
                           for Minor in range(2, 8)]):
-    Name = 'clang'
+    LibName = 'clang'
     if Version is not None:
-        Name += Version
-    LibName = ctypes.util.find_library(Name)
-    if LibName is not None:
-        clang.cindex.Config.set_library_file(LibName)
+        LibName += Version
+    LibFile = ctypes.util.find_library(LibName)
+    if LibFile is not None:
+        clang.cindex.Config.set_library_file(LibFile)
         break
 
 def ConfigSectionToDict(Config, Section, Defaults=None):
@@ -121,3 +124,20 @@ class CStyle(object):
                                         Column=Node.location.column,
                                         Reason=Reason))
         return Errors
+
+def Main():
+    """Run cstyle"""
+    Parser = argparse.ArgumentParser(description='C Style Checker')
+    Parser.add_argument('--config', dest='Config',
+                        default=os.path.expanduser('~/.cstyle'),
+                        help='configuration file')
+    Parser.add_argument('FILES', metavar='FILE', nargs='+',
+                        help='files to check')
+    Args = Parser.parse_args()
+    Errors = CStyle(Args.Config, Args.FILES).CheckStyle()
+    for Error in Errors:
+        sys.stderr.write(Error)
+    sys.exit(1 if len(Errors) > 0 else 0)
+
+if __name__ == '__main__':
+    Main()

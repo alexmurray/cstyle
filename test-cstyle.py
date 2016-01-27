@@ -1,7 +1,8 @@
 #!/usr/bin/env python2
-import cstyle
-import unittest
 import ConfigParser
+import cstyle
+import os.path
+import unittest
 
 class TestCStyle(unittest.TestCase):
     def __init__(self, Name, ExpectedErrors=None):
@@ -10,10 +11,11 @@ class TestCStyle(unittest.TestCase):
         super(TestCStyle, self).__init__()
 
     def runTest(self):
-        Errors = cstyle.CStyle('./tests/' + self._Name + '.conf',
-                               ['./tests/' + self._Name + '.c']).CheckStyle()
+        Base = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                            'test', self._Name)
+        Errors = cstyle.CStyle(Base + '.conf',
+                               [Base + '.c']).CheckStyle()
         self.assertEqual(Errors, self._ExpectedErrors)
-
 
 if __name__ == '__main__':
     Tests = {'0001_pointer_prefix': [],
@@ -22,7 +24,7 @@ if __name__ == '__main__':
              '0004_prefer_goto': []}
 
     TestSuite = unittest.TestSuite()
-    for TestName in Tests:
-        TestCase = TestCStyle(TestName)
+    for (Name, Errors) in Tests.iteritems():
+        TestCase = TestCStyle(Name, Errors)
         TestSuite.addTest(TestCase)
     unittest.TextTestRunner().run(TestSuite)

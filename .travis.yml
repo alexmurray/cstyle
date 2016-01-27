@@ -6,9 +6,13 @@ install:
   - "sudo apt-get update"
   - "sudo apt-get install -qq libclang-3.5-dev"
   - "pip install clang"
+  - "pip install coveralls"
 
 script:
-  - ./test-cstyle
+  - coverage run --source=cstyle.py test-cstyle.py
+
+after_success:
+  - coveralls
 
 notifications:
   email: true
