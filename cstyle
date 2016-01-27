@@ -4,6 +4,7 @@
 import argparse
 import ConfigParser
 import clang.cindex
+import ctypes
 import os
 import re
 import sys
@@ -75,6 +76,7 @@ class CStyle(object):
 
     def CheckStyle(self):
         """Check Files against RulesDB and report violations to stderr"""
+        clang.cindex.Config.set_library_file(ctypes.util.find_library('clang'))
         for File in self.Files:
             Index = clang.cindex.Index.create()
             Unit = Index.parse(File)
