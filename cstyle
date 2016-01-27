@@ -52,7 +52,9 @@ class CStyle(object):
             if Invalid:
                 Reason = 'goto considered harmful'
 
-        if not Invalid:
+        # no point checking something which doesn't have a name (could be an
+        # unnamed struct etc)
+        if not Invalid and len(Name) > 0:
             Invalid = (Node.kind in self.RulesDB and
                        not self.RulesDB[Node.kind].match(Name))
             if Invalid:
