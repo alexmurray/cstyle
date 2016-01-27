@@ -16,13 +16,14 @@ class CStyle(object):
         self.Files = Files
         self._NReturns = 0
 
+    def Local(self, Node):
+        """Check if Node refers to a local file."""
+        return Node.location.file and Node.location.file.name in self.Files
+
     def Invalid(self, Node):
         """Check if Node is invalid."""
         Invalid = False
         Reason = ''
-        Local = Node.location.file and Node.location.file.name in self.Files
-        if not Local:
-            return Invalid, Reason
 
         Name = Node.spelling
         if (self.Options['pointer_prefix'] and
@@ -39,7 +40,8 @@ class CStyle(object):
                 Prefix = Prefix * Count
             Invalid = not Name.startswith(Prefix)
             if Invalid:
-                Reason = 'Expected pointer prefix "{Prefix}"'.format(Prefix=Prefix)
+                FmtStr = '"{Name}" is invalid - expected pointer prefix "{Prefix}"'
+                Reason = FmtStr.format(Name=Name, Prefix=Prefix)
                 return Invalid, Reason
             else:
                 # strip n prefix chars
@@ -66,8 +68,8 @@ class CStyle(object):
             Invalid = (Node.kind in self.RulesDB and
                        not self.RulesDB[Node.kind].match(Name))
             if Invalid:
-                Reason = 'Failed regexp check "{Regex}"'.format(
-                    Regex=self.RulesDB[Node.kind].pattern)
+                FmtStr = '"{Name}" is invalid - failed regexp check "{Regex}"'
+                FmtStr.format(Name=Name, Regex=self.RulesDB[Node.kind].pattern)
         return Invalid, Reason
 
     def CheckStyle(self):
