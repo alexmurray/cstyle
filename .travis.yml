@@ -3,7 +3,7 @@ dist: trusty
 language: python
 
 install:
-  - "pip install python-clang"
+  - "pip install clang"
 
 script:
   - pushd tests && ./runtests.sh && popd
