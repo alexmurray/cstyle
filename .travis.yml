@@ -1,0 +1,8 @@
+install:
+  - sudo apt-get -qq install python-clang-3.6
+
+script:
+  - ./tests/runtests.sh
+
+notifications:
+  email: true
