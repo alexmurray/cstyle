@@ -28,7 +28,9 @@ declarations.
 
 For more information on the various libclang kinds see the
 [libclang documentation](http://clang.llvm.org/doxygen/group__CINDEX.html#gaaccc432245b4cd9f2d470913f9ef0013)
-for the `CursorKind` type.
+for the `CursorKind` type. NOTE: In the cstyle configuration file, each kind is
+specified as lowercase without the `CXCursor_` prefix, with the CamelCase suffix
+written in snake_case.
 
 ## Requirements
 
