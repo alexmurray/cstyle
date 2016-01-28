@@ -46,7 +46,7 @@ setup(
     keywords='development',
     py_modules=['cstyle'],
     install_requires=['clang'],
-    test_suite='test-cstyle',
+    test_suite='test-cstyle.CStyleTestSuite',
     entry_points={
         'console_scripts': [
             'cstyle=cstyle:Main',
