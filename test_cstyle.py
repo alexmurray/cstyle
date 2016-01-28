@@ -5,6 +5,7 @@ Unit tests for cstyle.
 import cstyle
 import os.path
 import unittest
+import sys
 
 class CStyleTestCase(unittest.TestCase):
     """Base test case for testing CStyle."""
@@ -15,7 +16,10 @@ class CStyleTestCase(unittest.TestCase):
         super(CStyleTestCase, self).__init__(name)
 
     def runTest(self):
-        """Test {basename}.""".format(basename=self._basename)
+        """Test case"""
+        # output our name as all tests are called runTest so too hard to
+        # distinguish
+        sys.stderr.write(self._basename + ' ... ')
         base = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                             'test', self._basename)
         errors = cstyle.CStyle(base + '.conf',
