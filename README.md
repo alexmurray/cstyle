@@ -11,6 +11,20 @@ CStyle uses libclang to parse and identify elements (variable declarations,
 function names / parameters etc) and then simply checks each against a list of
 rules.
 
+## Installation
+
+    git clone https://github.com/alexmurray/cstyle.git
+    cd cstyle
+    pip install .
+
+## Usage
+
+`cstyle` supports a few command-line arguments:
+
+ * `--config` - Used to specify the path to the configuration file (See [Configuration](#configuration) below)
+
+See `cstyle --help` for more details.
+
 ## Configuration
 
 CStyle is configured using a configuration file (see an example in
