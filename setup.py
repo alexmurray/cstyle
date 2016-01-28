@@ -49,7 +49,7 @@ setup(
     test_suite='test_cstyle.CStyleTestSuite',
     entry_points={
         'console_scripts': [
-            'cstyle=cstyle:Main',
+            'cstyle=cstyle:main',
         ],
     },
 )
