@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 """
 This module defines the attributes of the PyPI package for cstyle
 """
@@ -46,7 +46,7 @@ setup(
     keywords='development',
     py_modules=['cstyle'],
     install_requires=['clang'],
-    test_suite='test-cstyle.CStyleTestSuite',
+    test_suite='test_cstyle.CStyleTestSuite',
     entry_points={
         'console_scripts': [
             'cstyle=cstyle:Main',

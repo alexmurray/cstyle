@@ -1,5 +1,5 @@
-#!/usr/bin/env python2
-"""CStyle Checker based on libclang"""
+#!/usr/bin/env python
+"""cstyle C/C++ style checker based on libclang"""
 
 import argparse
 import ConfigParser
@@ -10,134 +10,142 @@ import re
 import sys
 
 # try find and set libclang manually once
-for Version in ([None] + ["-3.{Minor}".format(Minor=Minor)
-                          for Minor in range(2, 8)]):
-    LibName = 'clang'
-    if Version is not None:
-        LibName += Version
-    LibFile = ctypes.util.find_library(LibName)
-    if LibFile is not None:
-        clang.cindex.Config.set_library_file(LibFile)
+for version in ([None] + ["-3.{minor}".format(minor=minor)
+                          for minor in range(2, 8)]):
+    lib_name = 'clang'
+    if version is not None:
+        lib_name += version
+    lib_file = ctypes.util.find_library(lib_name)
+    if lib_file is not None:
+        clang.cindex.Config.set_library_file(lib_file)
         break
 
-def ConfigSectionToDict(Config, Section, Defaults=None):
-    """Create a dict from a Section of Config"""
-    Dict = {} if Defaults is None else Defaults
+def config_section_to_dict(config, section, defaults=None):
+    """Create a dict from a section of config"""
+    _dict = {} if defaults is None else defaults
     try:
-        for (Name, Value) in Config.items(Section):
-            Dict[Name] = Value
+        for (name, value) in config.items(section):
+            _dict[name] = value
     except ConfigParser.NoSectionError:
         pass
-    return Dict
+    return _dict
 
 class CStyle(object):
     """CStyle checker"""
-    def __init__(self, ConfigFile, Files):
-        Config = ConfigParser.ConfigParser()
-        Config.read(ConfigFile)
-        Rules = ConfigSectionToDict(Config, 'Rules')
+    def __init__(self, Configfiles, files):
+        config = ConfigParser.ConfigParser()
+        config.read(Configfiles)
+        rules = config_section_to_dict(config, 'Rules')
 
-        Kinds = {Kind.name.lower(): Kind for Kind in clang.cindex.CursorKind.get_all_kinds()}
-        RulesDB = {Kinds[Kind]: re.compile(Pattern) for (Kind, Pattern) in Rules.items()}
-        self.PointerPrefix = (None if not Config.has_option('Options', 'pointer_prefix')
-                         else Config.get('Options', 'pointer_prefix'))
-        self.PointerPrefixRepeat = (False if not Config.has_option('Options', 'pointer_prefix_repeat')
-                         else Config.getboolean('Options', 'pointer_prefix_repeat'))
-        self.PreferGoto = (False if not Config.has_option('Options', 'prefer_goto')
-                  else Config.getboolean('Options', 'prefer_goto'))
-        self.RulesDB = RulesDB
-        self.Files = Files
-        self._NReturns = 0
+        kinds = {kind.name.lower(): kind
+                 for kind in clang.cindex.CursorKind.get_all_kinds()}
+        rules_db = {kinds[kind]: re.compile(Pattern)
+                    for (kind, Pattern) in rules.items()}
+        self.pointer_prefix = (None if not
+                               config.has_option('Options', 'pointer_prefix')
+                         else config.get('Options', 'pointer_prefix'))
+        self.pointer_prefix_repeat = (False if not
+                                      config.has_option('Options',
+                                                        'pointer_prefix_repeat')
+                         else config.getboolean('Options',
+                                                'pointer_prefix_repeat'))
+        self.prefer_goto = (False if not
+                            config.has_option('Options', 'prefer_goto')
+                  else config.getboolean('Options', 'prefer_goto'))
+        self.rules_db = rules_db
+        self.files = files
+        self._n_returns = 0
 
-    def Local(self, Node):
-        """Check if Node refers to a local file."""
-        return Node.location.file and Node.location.file.name in self.Files
+    def local(self, node):
+        """Check if node refers to a local file."""
+        return node.location.file and node.location.file.name in self.files
 
-    def Invalid(self, Node):
-        """Check if Node is invalid."""
-        Invalid = False
-        Reason = ''
+    def invalid(self, node):
+        """Check if node is invalid."""
+        invalid = False
+        reason = ''
 
-        Name = Node.spelling
-        if (self.PointerPrefix and
-            (Node.kind == clang.cindex.CursorKind.VAR_DECL or
-             Node.kind == clang.cindex.CursorKind.PARM_DECL) and
-            Node.type and (Node.type.spelling.count('*') +
-                           Node.type.spelling.count('[')) > 0):
-            Prefix = self.PointerPrefix
-            Type = Node.type.spelling
-            Count = len(Prefix)
-            if self.PointerPrefixRepeat:
-                Count = Type.count('*') + Type.count('[')
-                Prefix = Prefix * Count
-                Invalid = not Name.startswith(Prefix)
-            if Invalid:
-                FmtStr = '"{Name}" is invalid - expected pointer prefix "{Prefix}"'
-                Reason = FmtStr.format(Name=Name, Prefix=Prefix)
-                return Invalid, Reason
+        name = node.spelling
+        if (self.pointer_prefix and
+            (node.kind == clang.cindex.CursorKind.VAR_DECL or
+             node.kind == clang.cindex.CursorKind.PARM_DECL) and
+            node.type and (node.type.spelling.count('*') +
+                           node.type.spelling.count('[')) > 0):
+            prefix = self.pointer_prefix
+            type_ = node.type.spelling
+            count = len(prefix)
+            if self.pointer_prefix_repeat:
+                count = type_.count('*') + type_.count('[')
+                prefix = prefix * count
+                invalid = not name.startswith(prefix)
+            if invalid:
+                fmt = '"{name}" is invalid - expected pointer prefix "{prefix}"'
+                reason = fmt.format(name=name, prefix=prefix)
+                return invalid, reason
             else:
                 # strip n prefix chars
-                Name = Name[Count:]
+                name = name[count:]
 
-        if self.PreferGoto:
-            if Node.kind == clang.cindex.CursorKind.FUNCTION_DECL:
-                self._NReturns = 0
-            elif Node.kind == clang.cindex.CursorKind.RETURN_STMT:
-                self._NReturns = self._NReturns + 1
-            Invalid = self._NReturns > 1
-            if Invalid:
-                Reason = 'Only 1 return statement per function (prefer_goto)'
-                return Invalid, Reason
+        if self.prefer_goto:
+            if node.kind == clang.cindex.CursorKind.FUNCTION_DECL:
+                self._n_returns = 0
+            elif node.kind == clang.cindex.CursorKind.RETURN_STMT:
+                self._n_returns = self._n_returns + 1
+            invalid = self._n_returns > 1
+            if invalid:
+                reason = 'Only 1 return statement per function (prefer_goto)'
+                return invalid, reason
         else:
-            Invalid = (Node.kind == clang.cindex.CursorKind.GOTO_STMT)
-            if Invalid:
-                Reason = 'goto considered harmful'
-                return Invalid, Reason
+            invalid = (node.kind == clang.cindex.CursorKind.GOTO_STMT)
+            if invalid:
+                reason = 'goto considered harmful'
+                return invalid, reason
 
         # no point checking something which doesn't have a name (could be an
         # unnamed struct etc)
-        if not Invalid and len(Name) > 0:
-            Invalid = (Node.kind in self.RulesDB and
-                       not self.RulesDB[Node.kind].match(Name))
-            if Invalid:
-                FmtStr = '"{Name}" is invalid - failed regexp check "{Regex}"'
-                FmtStr.format(Name=Name, Regex=self.RulesDB[Node.kind].pattern)
-        return Invalid, Reason
+        if not invalid and len(name) > 0:
+            invalid = (node.kind in self.rules_db and
+                       not self.rules_db[node.kind].match(name))
+            if invalid:
+                fmt = '"{name}" is invalid - failed regexp check "{Regex}"'
+                fmt.format(name=name, Regex=self.rules_db[node.kind].pattern)
+        return invalid, reason
 
-    def CheckStyle(self):
-        """Check Files against RulesDB and report violations to stderr"""
-        Errors = []
-        for File in self.Files:
-            Index = clang.cindex.Index.create()
-            Unit = Index.parse(File)
-            LocalNodes = [Node for Node in Unit.cursor.walk_preorder() if self.Local(Node)]
-            InvalidNodes = []
-            for Node in LocalNodes:
-                Invalid, Reason = self.Invalid(Node)
-                if Invalid:
-                    InvalidNodes.append((Node, Reason))
+    def check(self):
+        """Check files against rules_db and return errors"""
+        errors = []
+        for files in self.files:
+            index = clang.cindex.Index.create()
+            unit = index.parse(files)
+            local_nodes = [node for node in unit.cursor.walk_preorder()
+                           if self.local(node)]
+            invalid_nodes = []
+            for node in local_nodes:
+                invalid, reason = self.invalid(node)
+                if invalid:
+                    invalid_nodes.append((node, reason))
 
-            for (Node, Reason) in InvalidNodes:
-                Errors.append(('{File}:{Line}:{Column}: {Reason}\n').
-                                 format(File=Node.location.file.name,
-                                        Line=Node.location.line,
-                                        Column=Node.location.column,
-                                        Reason=Reason))
-        return Errors
+            for (node, reason) in invalid_nodes:
+                errors.append(('{files}:{Line}:{Column}: {reason}\n').
+                                 format(files=node.location.file.name,
+                                        Line=node.location.line,
+                                        Column=node.location.column,
+                                        reason=reason))
+        return errors
 
-def Main():
+def main():
     """Run cstyle"""
-    Parser = argparse.ArgumentParser(description='C Style Checker')
-    Parser.add_argument('--config', dest='Config',
+    parser = argparse.ArgumentParser(description='C Style Checker')
+    parser.add_argument('--config', dest='config',
                         default=os.path.expanduser('~/.cstyle'),
                         help='configuration file')
-    Parser.add_argument('FILES', metavar='FILE', nargs='+',
+    parser.add_argument('FILES', metavar='FILE', nargs='+',
                         help='files to check')
-    Args = Parser.parse_args()
-    Errors = CStyle(Args.Config, Args.FILES).CheckStyle()
-    for Error in Errors:
-        sys.stderr.write(Error)
-    sys.exit(1 if len(Errors) > 0 else 0)
+    args = parser.parse_args()
+    errors = CStyle(args.config, args.FILES).check()
+    for error in errors:
+        sys.stderr.write(error)
+    sys.exit(1 if len(errors) > 0 else 0)
 
 if __name__ == '__main__':
-    Main()
+    main()
