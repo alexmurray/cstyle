@@ -198,7 +198,11 @@ def main():
     args = parser.parse_args()
     if args.generate_config:
         sys.stdout.write(CStyle().generate_config())
-        sys.exit(0)
+        return 0
+
+    if len(args.FILES) == 0:
+        parser.print_help()
+        return 0
 
     errors = CStyle(args.config, args.FILES).check()
     for error in errors:
@@ -206,7 +210,7 @@ def main():
                                               line=error['line'],
                                               column=error['column'],
                                               reason=error['reason']) + '\n')
-    sys.exit(1 if len(errors) > 0 else 0)
+    return (1 if len(errors) > 0 else 0)
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

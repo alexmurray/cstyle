@@ -32,6 +32,13 @@ class CStyleGenerateConfigTestCase(unittest.TestCase):
         """Test configuration file generation."""
         cstyle.CStyle(None, []).generate_config()
 
+class CStyleMainTestCase(unittest.TestCase):
+    """Test main of cstyle."""
+    def runTest(self):
+        """Test cstyle.main with no arguments."""
+        sys.argv = [ "cstyle" ]
+        cstyle.main()
+
 class CStyleTestSuite(unittest.TestSuite):
     """Test suite for cstyle."""
     def __init__(self):
@@ -78,6 +85,7 @@ class CStyleTestSuite(unittest.TestSuite):
             test = CStyleTestCase('runTest', basename, expected_errors)
             self.addTest(test)
         self.addTest(CStyleGenerateConfigTestCase())
+        self.addTest(CStyleMainTestCase())
 
 if __name__ == '__main__':
     unittest.TextTestRunner().run(CStyleTestSuite())
