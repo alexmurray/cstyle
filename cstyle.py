@@ -155,11 +155,10 @@ class CStyle(object):
                     invalid_nodes.append((node, reason))
 
             for (node, reason) in invalid_nodes:
-                errors.append(('{files}:{line}:{column}: {reason}\n').
-                                 format(files=node.location.file.name,
-                                        line=node.location.line,
-                                        column=node.location.column,
-                                        reason=reason))
+                errors.append({'file': node.location.file.name,
+                               'line': node.location.line,
+                               'column': node.location.column,
+                               'reason': reason})
         return errors
 
     def generate_config(self):
@@ -190,7 +189,10 @@ def main():
     parser.add_argument('--config', dest='config',
                         default=os.path.expanduser('~/.cstyle'),
                         help='configuration file')
-    parser.add_argument('FILES', metavar='FILE', nargs='?',
+    parser.add_argument('--msg-template', dest='template',
+                        default='{file}:{line}:{column}: {reason}',
+                        help='Set the template used to display messages.')
+    parser.add_argument('FILES', metavar='FILE', nargs='*',
                         help='files to check')
     args = parser.parse_args()
     if args.generate_config:
@@ -199,7 +201,10 @@ def main():
 
     errors = CStyle(args.config, args.FILES).check()
     for error in errors:
-        sys.stderr.write(error)
+        sys.stderr.write(args.template.format(file=error['file'],
+                                              line=error['line'],
+                                              column=error['column'],
+                                              reason=error['reason']) + '\n')
     sys.exit(1 if len(errors) > 0 else 0)
 
 if __name__ == '__main__':

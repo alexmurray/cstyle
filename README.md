@@ -24,8 +24,17 @@ rules.
 `cstyle` supports a few command-line arguments:
 
  * `--generate-config` - Generate a sample configuration file
+ * `--config` - Used to specify the path to the configuration file (See
+   [Configuration](#configuration) below)
 
- * `--config` - Used to specify the path to the configuration file (See [Configuration](#configuration) below)
+ * `--msg-template` - Used to specify the template string for outputting messages. This is specified as a Python new-style format string. This supports the following named arguments:
+
+   * `file` - the path to the file
+   * `line` - the line of the message
+   * `column` - the column number of the identifier which the message concerns
+   * `reason` - a human readable description of the message
+
+   The default is `'{file}:{line}:{column}: {reason}'`
 
 See `cstyle --help` for more details.
 
