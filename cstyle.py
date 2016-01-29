@@ -136,8 +136,9 @@ class CStyle(object):
             invalid = (node.kind in self.rules_db and
                        not self.rules_db[node.kind].match(name))
             if invalid:
-                fmt = '"{name}" is invalid - failed regexp check "{Regex}"'
-                fmt.format(name=name, Regex=self.rules_db[node.kind].pattern)
+                fmt = '"{name}" is invalid - failed pattern check "{pattern}"'
+                reason = fmt.format(name=name,
+                                    pattern=self.rules_db[node.kind].pattern)
         return invalid, reason
 
     def check(self):
