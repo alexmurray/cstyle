@@ -31,10 +31,10 @@ See `cstyle --help` for more details.
 
 ## Configuration
 
-CStyle is configured using a configuration file (see an example in
-[config/cohda.cstyle](https://github.com/alexmurray/cstyle/blob/master/config/cohda.cstyle)). This
-defaults to `~/.cstyle` but can be specified using the `--config` command-line
-option.
+CStyle is configured using a configuration file (a sample configuration can be
+automatically generated with the `--generate-config` command-line
+argument). This defaults to `~/.cstyle` but a particular configuration can be
+specified using the `--config` command-line option.
 
 The configuration file supports some basic options in the `Options` section:
 
