@@ -16,10 +16,14 @@ rules.
     git clone https://github.com/alexmurray/cstyle.git
     cd cstyle
     pip install .
+    cstyle --generate-config > ~/.cstyle
+    # edit ~/.cstyle as required
 
 ## Usage
 
 `cstyle` supports a few command-line arguments:
+
+ * `--generate-config` - Generate a sample configuration file
 
  * `--config` - Used to specify the path to the configuration file (See [Configuration](#configuration) below)
 
@@ -34,9 +38,9 @@ option.
 
 The configuration file supports some basic options in the `Options` section:
 
- * `prefer_goto` - If enabled, will warn when multiple `return` statements exist
-   in a single function. However, if disabled will warn about *any* use of
-   `goto` at all.
+ * `prefer_goto` - If set to `true`, will warn when multiple `return` statements
+   exist in a single function. However, if set to `false` will warn about *any*
+   use of `goto` at all.
 
  * `pointer_prefix` - If a variable is a pointer, this prefix is checked to
    exist at the start of the variable name. To disable simply remove this

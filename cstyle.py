@@ -32,28 +32,57 @@ def config_section_to_dict(config, section, defaults=None):
 
 class CStyle(object):
     """CStyle checker"""
-    def __init__(self, Configfiles, files):
+    def __init__(self, config_file=None, files=None):
+        self.OPTIONS = {
+            'pointer_prefix': {
+                'type': str,
+                'default': '',
+                'doc': ('If a variable is a pointer, this prefix is checked\n'
+                        'to exist at the start of the variable name.')
+            },
+            'pointer_prefix_repeat': {
+                'type': bool,
+                'default': False,
+                'doc': ('If set to `true` (and `pointer_prefix` is set),\n'
+                        'then the `pointer_prefix` is\n'
+                        'expected to be repeated by the depth of the\n'
+                        'pointer. i.e. for the argument `char **ppArgv`,\n'
+                        '`pointer_prefix` should be set to `p` and\n'
+                        '`pointer_prefix_repeat` should be `true`.)')
+            },
+            'prefer_goto': {
+                'type': bool,
+                'default': False,
+                'doc': ('If set to `true`, will warn when multiple\n'
+                        '`return` statements exist in a single function.\n'
+                        'However, if set to `false` will warn about *any*\n'
+                        'use of `goto` at all.')
+            }
+        }
         config = ConfigParser.ConfigParser()
-        config.read(Configfiles)
-        rules = config_section_to_dict(config, 'Rules')
-
         kinds = {kind.name.lower(): kind
                  for kind in clang.cindex.CursorKind.get_all_kinds()}
-        rules_db = {kinds[kind]: re.compile(Pattern)
-                    for (kind, Pattern) in rules.items()}
-        self.pointer_prefix = (None if not
-                               config.has_option('Options', 'pointer_prefix')
-                         else config.get('Options', 'pointer_prefix'))
-        self.pointer_prefix_repeat = (False if not
-                                      config.has_option('Options',
-                                                        'pointer_prefix_repeat')
-                         else config.getboolean('Options',
-                                                'pointer_prefix_repeat'))
-        self.prefer_goto = (False if not
-                            config.has_option('Options', 'prefer_goto')
-                  else config.getboolean('Options', 'prefer_goto'))
-        self.rules_db = rules_db
-        self.files = files
+        if config_file is not None:
+            config.read(config_file)
+            rules = config_section_to_dict(config, 'Rules')
+            self.rules_db = {kinds[kind]: re.compile(pattern)
+                             for (kind, pattern) in rules.items()}
+        else:
+            self.rules_db = {kinds[kind]: re.compile('^.*$')
+                             for kind in kinds.keys()}
+        self.options = {}
+        for name, option in self.OPTIONS.iteritems():
+            if option['type'] is bool:
+                self.options[name] = (option['default']
+                                      if not config.has_option('Options', name)
+                                      else config.getboolean('Options', name))
+            elif option['type'] is str:
+                self.options[name] = (option['default']
+                                      if not config.has_option('Options', name)
+                                      else config.get('Options', name))
+            else:
+                raise TypeError
+        self.files = files if files is not None else []
         self._n_returns = 0
 
     def local(self, node):
@@ -66,15 +95,15 @@ class CStyle(object):
         reason = ''
 
         name = node.spelling
-        if (self.pointer_prefix and
+        if (self.options['pointer_prefix'] != '' and
             (node.kind == clang.cindex.CursorKind.VAR_DECL or
              node.kind == clang.cindex.CursorKind.PARM_DECL) and
             node.type and (node.type.spelling.count('*') +
                            node.type.spelling.count('[')) > 0):
-            prefix = self.pointer_prefix
+            prefix = self.options['pointer_prefix']
             type_ = node.type.spelling
             count = len(prefix)
-            if self.pointer_prefix_repeat:
+            if self.options['pointer_prefix_repeat']:
                 count = type_.count('*') + type_.count('[')
                 prefix = prefix * count
                 invalid = not name.startswith(prefix)
@@ -86,7 +115,7 @@ class CStyle(object):
                 # strip n prefix chars
                 name = name[count:]
 
-        if self.prefer_goto:
+        if self.options['prefer_goto']:
             if node.kind == clang.cindex.CursorKind.FUNCTION_DECL:
                 self._n_returns = 0
             elif node.kind == clang.cindex.CursorKind.RETURN_STMT:
@@ -126,22 +155,48 @@ class CStyle(object):
                     invalid_nodes.append((node, reason))
 
             for (node, reason) in invalid_nodes:
-                errors.append(('{files}:{Line}:{Column}: {reason}\n').
+                errors.append(('{files}:{line}:{column}: {reason}\n').
                                  format(files=node.location.file.name,
-                                        Line=node.location.line,
-                                        Column=node.location.column,
+                                        line=node.location.line,
+                                        column=node.location.column,
                                         reason=reason))
         return errors
+
+    def generate_config(self):
+        """Generate configuration and return as a string"""
+        config = ''
+        # Options
+        config += '[Options]\n'
+        for (name, option) in self.OPTIONS.iteritems():
+            default = option['default']
+            if option['type'] is bool:
+                default = str(default).lower()
+            doc = option['doc'].replace('\n', '\n# ')
+            config += '# {doc}\n'.format(doc=doc)
+            config += '{name}: {default}\n'.format(name=name,
+                                                   default=default)
+            config += '\n'
+        config += '[Rules]\n'
+        for (kind, pattern) in self.rules_db.iteritems():
+            config += '{kind}: {pattern}\n'.format(kind=kind.name.lower(),
+                                                   pattern=pattern.pattern)
+        return config
 
 def main():
     """Run cstyle"""
     parser = argparse.ArgumentParser(description='C Style Checker')
+    parser.add_argument('--generate-config', action='store_true',
+                        help='generate a configuration file')
     parser.add_argument('--config', dest='config',
                         default=os.path.expanduser('~/.cstyle'),
                         help='configuration file')
-    parser.add_argument('FILES', metavar='FILE', nargs='+',
+    parser.add_argument('FILES', metavar='FILE', nargs='?',
                         help='files to check')
     args = parser.parse_args()
+    if args.generate_config:
+        sys.stdout.write(CStyle().generate_config())
+        sys.exit(0)
+
     errors = CStyle(args.config, args.FILES).check()
     for error in errors:
         sys.stderr.write(error)
