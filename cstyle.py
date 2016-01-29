@@ -33,7 +33,7 @@ def config_section_to_dict(config, section, defaults=None):
 class CStyle(object):
     """CStyle checker"""
     def __init__(self, config_file=None, files=None):
-        self.OPTIONS = {
+        self.options_map = {
             'pointer_prefix': {
                 'type': str,
                 'default': '',
@@ -71,7 +71,7 @@ class CStyle(object):
             self.rules_db = {kinds[kind]: re.compile('^.*$')
                              for kind in kinds.keys()}
         self.options = {}
-        for name, option in self.OPTIONS.iteritems():
+        for name, option in self.options_map.iteritems():
             if option['type'] is bool:
                 self.options[name] = (option['default']
                                       if not config.has_option('Options', name)
@@ -167,7 +167,7 @@ class CStyle(object):
         config = ''
         # Options
         config += '[Options]\n'
-        for (name, option) in self.OPTIONS.iteritems():
+        for (name, option) in self.options_map.iteritems():
             default = option['default']
             if option['type'] is bool:
                 default = str(default).lower()
@@ -210,7 +210,7 @@ def main():
                                               line=error['line'],
                                               column=error['column'],
                                               reason=error['reason']) + '\n')
-    return (1 if len(errors) > 0 else 0)
+    return 1 if len(errors) > 0 else 0
 
 if __name__ == '__main__':
     sys.exit(main())
