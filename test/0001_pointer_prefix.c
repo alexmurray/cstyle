@@ -1,4 +1,4 @@
-int main(int Argc, char **pArgv)
+int main(int Argc, char **Argv)
 {
   return 0;
 }

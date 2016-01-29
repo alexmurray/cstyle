@@ -1,10 +1,9 @@
+#include <stdlib.h>
+
 int main(int Argc, char **pArgv)
 {
-  goto foo;
-
-foo:
-  goto bar;
-
-bar:
-  return 0;
+  if (random())
+    return 0;
+  else
+    return 1;
 }
