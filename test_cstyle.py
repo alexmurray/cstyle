@@ -35,8 +35,22 @@ class CStyleGenerateConfigTestCase(unittest.TestCase):
 class CStyleMainTestCase(unittest.TestCase):
     """Test main of cstyle."""
     def runTest(self):
+        """Test cstyle.main."""
+        sys.argv = [ "cstyle", "test/0001_pointer_prefix.c"]
+        cstyle.main()
+
+class CStyleMainNoArgumentsTestCase(unittest.TestCase):
+    """Test main of cstyle with no arguments."""
+    def runTest(self):
         """Test cstyle.main with no arguments."""
         sys.argv = [ "cstyle" ]
+        cstyle.main()
+
+class CStyleMainGenerateConfigTestCase(unittest.TestCase):
+    """Test main of cstyle with --generate-config argument."""
+    def runTest(self):
+        """Test cstyle.main with --generate-config."""
+        sys.argv = [ "cstyle", "--generate-config" ]
         cstyle.main()
 
 class CStyleTestSuite(unittest.TestSuite):
@@ -86,6 +100,8 @@ class CStyleTestSuite(unittest.TestSuite):
             self.addTest(test)
         self.addTest(CStyleGenerateConfigTestCase())
         self.addTest(CStyleMainTestCase())
+        self.addTest(CStyleMainNoArgumentsTestCase())
+        self.addTest(CStyleMainGenerateConfigTestCase())
 
 if __name__ == '__main__':
     unittest.TextTestRunner().run(CStyleTestSuite())
