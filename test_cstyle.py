@@ -36,39 +36,40 @@ class CStyleTestSuite(unittest.TestSuite):
     """Test suite for cstyle."""
     def __init__(self):
         super(CStyleTestSuite, self).__init__()
+        base = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'test')
         tests = {'0001_pointer_prefix':
                  [
                      {'column': 27,
-                      'file': '/home/amurray/cstyle/test/0001_pointer_prefix.c',
+                      'file': os.path.join(base, '0001_pointer_prefix.c'),
                       'line': 1,
                       'reason': '"rgv" is invalid - failed pattern check "[A-Z][A-Za-z_]+"'}
                  ],
                  '0002_pointer_prefix_repeat':
                  [
                      {'column': 27,
-                      'file': '/home/amurray/cstyle/test/0002_pointer_prefix_repeat.c',
+                      'file': os.path.join(base, '0002_pointer_prefix_repeat.c'),
                       'line': 1,
                       'reason': '"pArgv" is invalid - expected pointer prefix "pp"'}
                  ],
                  '0003_no_goto':
                  [
                      {'column': 3,
-                      'file': '/home/amurray/cstyle/test/0003_no_goto.c',
+                      'file': os.path.join(base, '0003_no_goto.c'),
                       'line': 3,
                       'reason': 'goto considered harmful'},
                      {'column': 3,
-                      'file': '/home/amurray/cstyle/test/0003_no_goto.c',
+                      'file': os.path.join(base, '0003_no_goto.c'),
                       'line': 6,
                       'reason': 'goto considered harmful'}
                  ],
                  '0004_prefer_goto':
                  [
                      {'column': 5,
-                      'file': '/home/amurray/cstyle/test/0004_prefer_goto.c',
+                      'file': os.path.join(base, '0004_prefer_goto.c'),
                       'line': 8,
                       'reason': 'Only 1 return statement per function (prefer_goto)'},
                      {'column': 12,
-                      'file': '/home/amurray/cstyle/test/0004_prefer_goto.c',
+                      'file': os.path.join(base, '0004_prefer_goto.c'),
                       'line': 8,
                       'reason': 'Only 1 return statement per function (prefer_goto)'}
                  ]
