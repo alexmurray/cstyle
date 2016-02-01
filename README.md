@@ -3,6 +3,7 @@
 [![License GPL 3](https://img.shields.io/badge/license-GPL_3-green.svg)](http://www.gnu.org/licenses/gpl-3.0.txt)
 [![Build Status](https://travis-ci.org/alexmurray/cstyle.svg?branch=master)](https://travis-ci.org/alexmurray/cstyle)
 [![Coverage Status](https://coveralls.io/repos/github/alexmurray/cstyle/badge.svg?branch=master&bust=2)](https://coveralls.io/github/alexmurray/cstyle?branch=master)
+[![Code Climate](https://codeclimate.com/github/alexmurray/cstyle/badges/gpa.svg)](https://codeclimate.com/github/alexmurray/cstyle)
 
 CStyle is a simple tool to check the conformance of C/C++ coding against a
 predefined style convention for variable / function naming etc.
