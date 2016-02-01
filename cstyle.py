@@ -30,6 +30,17 @@ def config_section_to_dict(config, section, defaults=None):
         pass
     return _dict
 
+def node_is_variable(node):
+    """Is node a variable / param declaration?"""
+    return (node.kind == clang.cindex.CursorKind.VAR_DECL or
+            node.kind == clang.cindex.CursorKind.PARM_DECL)
+
+def node_is_pointer(node):
+    """Is node a pointer?"""
+    return (node_is_variable(node) and
+            node.type and (node.type.spelling.count('*') +
+                           node.type.spelling.count('[')) > 0)
+
 class CStyle(object):
     """CStyle checker"""
     def __init__(self, config_file=None, files=None):
@@ -59,9 +70,14 @@ class CStyle(object):
                         'use of `goto` at all.')
             }
         }
-        config = ConfigParser.ConfigParser()
+        # checks to perform on each node in this order
+        self.checks = [self.check_pointer_prefix,
+                       self.check_prefer_goto,
+                       self.check_goto_harmful,
+                       self.check_rules]
         kinds = {kind.name.lower(): kind
                  for kind in clang.cindex.CursorKind.get_all_kinds()}
+        config = ConfigParser.ConfigParser()
         if config_file is not None:
             config.read(config_file)
             rules = config_section_to_dict(config, 'Rules')
@@ -70,36 +86,31 @@ class CStyle(object):
         else:
             self.rules_db = {kinds[kind]: re.compile('^.*$')
                              for kind in kinds.keys()}
-        self.options = {}
-        for name, option in self.options_map.iteritems():
-            if option['type'] is bool:
-                self.options[name] = (option['default']
-                                      if not config.has_option('Options', name)
-                                      else config.getboolean('Options', name))
-            elif option['type'] is str:
-                self.options[name] = (option['default']
-                                      if not config.has_option('Options', name)
-                                      else config.get('Options', name))
-            else:
-                raise TypeError
+        self.options = self.parse_options(config)
         self.files = files if files is not None else []
         self._n_returns = 0
+
+    def parse_options(self, config):
+        """Parse Options section of config."""
+        options = {}
+        for name, option in self.options_map.iteritems():
+            get = 'get'
+            if option['type'] is bool:
+                get = 'getboolean'
+            options[name] = (option['default']
+                             if not config.has_option('Options', name)
+                             else getattr(config, get)('Options', name))
+        return options
 
     def local(self, node):
         """Check if node refers to a local file."""
         return node.location.file and node.location.file.name in self.files
 
-    def invalid(self, node):
-        """Check if node is invalid."""
+    def check_pointer_prefix(self, node, name):
+        """Do pointer_prefix related checks on node."""
         invalid = False
         reason = ''
-
-        name = node.spelling
-        if (self.options['pointer_prefix'] != '' and
-            (node.kind == clang.cindex.CursorKind.VAR_DECL or
-             node.kind == clang.cindex.CursorKind.PARM_DECL) and
-            node.type and (node.type.spelling.count('*') +
-                           node.type.spelling.count('[')) > 0):
+        if self.options['pointer_prefix'] != '' and node_is_pointer(node):
             prefix = self.options['pointer_prefix']
             type_ = node.type.spelling
             count = len(prefix)
@@ -107,14 +118,30 @@ class CStyle(object):
                 count = type_.count('*') + type_.count('[')
                 prefix = prefix * count
                 invalid = not name.startswith(prefix)
-            if invalid:
-                fmt = '"{name}" is invalid - expected pointer prefix "{prefix}"'
-                reason = fmt.format(name=name, prefix=prefix)
-                return invalid, reason
+                if invalid:
+                    fmt = ('"{name}" is invalid - expected pointer prefix '
+                           '"{prefix}"')
+                    reason = fmt.format(name=name, prefix=prefix)
+                    return invalid, reason, name
             else:
                 # strip n prefix chars
                 name = name[count:]
+        return invalid, reason, name
 
+    def check_goto_harmful(self, node, name):
+        """Check on any use of goto for node."""
+        invalid = False
+        reason = ''
+        if not self.options['prefer_goto']:
+            invalid = (node.kind == clang.cindex.CursorKind.GOTO_STMT)
+            if invalid:
+                reason = 'goto considered harmful'
+        return invalid, reason, name
+
+    def check_prefer_goto(self, node, name):
+        """Perform prefer_goto check on node."""
+        invalid = False
+        reason = ''
         if self.options['prefer_goto']:
             if node.kind == clang.cindex.CursorKind.FUNCTION_DECL:
                 self._n_returns = 0
@@ -123,43 +150,53 @@ class CStyle(object):
             invalid = self._n_returns > 1
             if invalid:
                 reason = 'Only 1 return statement per function (prefer_goto)'
-                return invalid, reason
-        else:
-            invalid = (node.kind == clang.cindex.CursorKind.GOTO_STMT)
-            if invalid:
-                reason = 'goto considered harmful'
-                return invalid, reason
+        return invalid, reason, name
 
+    def check_rules(self, node, name):
+        """Check rules on node with name."""
         # no point checking something which doesn't have a name (could be an
         # unnamed struct etc)
-        if not invalid and len(name) > 0:
+        invalid = False
+        reason = ''
+        if len(name) > 0:
             invalid = (node.kind in self.rules_db and
                        not self.rules_db[node.kind].match(name))
             if invalid:
                 fmt = '"{name}" is invalid - failed pattern check "{pattern}"'
                 reason = fmt.format(name=name,
                                     pattern=self.rules_db[node.kind].pattern)
+        return invalid, reason, name
+
+    def invalid(self, node):
+        """Check if node is invalid."""
+        invalid = False
+        reason = ''
+        name = node.spelling
+
+        for check in self.checks:
+            invalid, reason, name = check(node, name)
+            if invalid:
+                return invalid, reason
         return invalid, reason
+
+    def check_unit(self, unit):
+        """Check the translation unit."""
+        errors = []
+        for node in [node for node in unit.cursor.walk_preorder()
+                     if self.local(node)]:
+            invalid, reason = self.invalid(node)
+            if invalid:
+                errors.append({'file': node.location.file.name,
+                               'line': node.location.line,
+                               'column': node.location.column,
+                               'reason': reason})
+        return errors
 
     def check(self):
         """Check files against rules_db and return errors"""
         errors = []
         for files in self.files:
-            index = clang.cindex.Index.create()
-            unit = index.parse(files)
-            local_nodes = [node for node in unit.cursor.walk_preorder()
-                           if self.local(node)]
-            invalid_nodes = []
-            for node in local_nodes:
-                invalid, reason = self.invalid(node)
-                if invalid:
-                    invalid_nodes.append((node, reason))
-
-            for (node, reason) in invalid_nodes:
-                errors.append({'file': node.location.file.name,
-                               'line': node.location.line,
-                               'column': node.location.column,
-                               'reason': reason})
+            errors += self.check_unit(clang.cindex.Index.create().parse(files))
         return errors
 
     def generate_config(self):
