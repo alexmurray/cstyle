@@ -123,9 +123,8 @@ class CStyle(object):
                            '"{prefix}"')
                     reason = fmt.format(name=name, prefix=prefix)
                     return invalid, reason, name
-            else:
-                # strip n prefix chars
-                name = name[count:]
+            # strip n prefix chars
+            name = name[count:]
         return invalid, reason, name
 
     def check_goto_harmful(self, node, name):
