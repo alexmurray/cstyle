@@ -11,7 +11,7 @@ import sys
 
 # try find and set libclang manually once
 for version in ([None] + ["-3.{minor}".format(minor=minor)
-                          for minor in range(2, 8)]):
+                          for minor in range(2, 9)]):
     lib_name = 'clang'
     if version is not None:
         lib_name += version
