@@ -84,3 +84,7 @@ To integrate with Emacs there are two options - either standalone or via [flyche
 For standalone usage see [cstyle.el](https://github.com/alexmurray/cstyle.el).
 
 To integrate with flycheck see [flycheck-cstyle](https://github.com/alexmurray/flycheck-cstyle).
+
+## Vim Integration
+
+To integrate with vim via [syntastic](https://github.com/scrooloose/syntastic) see [syntastic-cstyle](https://github.com/alexmurray/syntastic-cstyle).
