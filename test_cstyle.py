@@ -93,6 +93,20 @@ class CStyleTestSuite(unittest.TestSuite):
                       'file': os.path.join(base, '0004_prefer_goto.c'),
                       'line': 8,
                       'reason': 'Only 1 return statement per function (prefer_goto)'}
+                 ],
+                 '0005_arrays_are_pointers':
+                 [
+                     {'column': 26,
+                      'file': os.path.join(base, '0005_arrays_are_pointers.c'),
+                      'line': 1,
+                      'reason': '"Argv" is invalid - expected pointer prefix "pp"'}
+                 ],
+                 '0006_arrays_arent_pointers':
+                 [
+                     {'column': 26,
+                      'file': os.path.join(base, '0006_arrays_arent_pointers.c'),
+                      'line': 1,
+                      'reason': '"Argv" is invalid - expected pointer prefix "p"'}
                  ]
         }
         for (basename, expected_errors) in tests.iteritems():

@@ -35,11 +35,12 @@ def node_is_variable(node):
     return (node.kind == clang.cindex.CursorKind.VAR_DECL or
             node.kind == clang.cindex.CursorKind.PARM_DECL)
 
-def node_is_pointer(node):
+def node_is_pointer(node, arrays_are_pointers):
     """Is node a pointer?"""
     return (node_is_variable(node) and
             node.type and (node.type.spelling.count('*') +
-                           node.type.spelling.count('[')) > 0)
+                           (node.type.spelling.count('[')
+                            if arrays_are_pointers else 0)) > 0)
 
 class CStyle(object):
     """CStyle checker"""
@@ -60,6 +61,12 @@ class CStyle(object):
                         'pointer. i.e. for the argument `char **ppArgv`,\n'
                         '`pointer_prefix` should be set to `p` and\n'
                         '`pointer_prefix_repeat` should be `true`.)')
+            },
+            'arrays_are_pointers': {
+                'type': bool,
+                'default': False,
+                'doc': ('If a variable is an array, treat it as a pointer\n'
+                'for `pointer_prefix` and related checks.')
             },
             'prefer_goto': {
                 'type': bool,
@@ -110,12 +117,15 @@ class CStyle(object):
         """Do pointer_prefix related checks on node."""
         invalid = False
         reason = ''
-        if self.options['pointer_prefix'] != '' and node_is_pointer(node):
+        if (self.options['pointer_prefix'] != '' and
+            node_is_pointer(node, self.options['arrays_are_pointers'])):
             prefix = self.options['pointer_prefix']
             type_ = node.type.spelling
             count = len(prefix)
             if self.options['pointer_prefix_repeat']:
-                count = type_.count('*') + type_.count('[')
+                count = type_.count('*')
+                if self.options['arrays_are_pointers']:
+                    count +=  type_.count('[')
                 prefix = prefix * count
             invalid = not name.startswith(prefix)
             if invalid:
