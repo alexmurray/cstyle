@@ -117,12 +117,12 @@ class CStyle(object):
             if self.options['pointer_prefix_repeat']:
                 count = type_.count('*') + type_.count('[')
                 prefix = prefix * count
-                invalid = not name.startswith(prefix)
-                if invalid:
-                    fmt = ('"{name}" is invalid - expected pointer prefix '
-                           '"{prefix}"')
-                    reason = fmt.format(name=name, prefix=prefix)
-                    return invalid, reason, name
+            invalid = not name.startswith(prefix)
+            if invalid:
+                fmt = ('"{name}" is invalid - expected pointer prefix '
+                       '"{prefix}"')
+                reason = fmt.format(name=name, prefix=prefix)
+                return invalid, reason, name
             # strip n prefix chars
             name = name[count:]
         return invalid, reason, name

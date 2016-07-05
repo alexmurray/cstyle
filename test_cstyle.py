@@ -63,7 +63,7 @@ class CStyleTestSuite(unittest.TestSuite):
                      {'column': 27,
                       'file': os.path.join(base, '0001_pointer_prefix.c'),
                       'line': 1,
-                      'reason': '"rgv" is invalid - failed pattern check "[A-Z][A-Za-z_]+"'}
+                      'reason': '"Argv" is invalid - expected pointer prefix "p"'}
                  ],
                  '0002_pointer_prefix_repeat':
                  [
