@@ -8,17 +8,31 @@ import ctypes.util
 import os
 import re
 import sys
+import platform
 
 # try find and set libclang manually once
-for version in ([None] + ["-3.{minor}".format(minor=minor)
-                          for minor in range(2, 9)]):
-    lib_name = 'clang'
-    if version is not None:
-        lib_name += version
-    lib_file = ctypes.util.find_library(lib_name)
-    if lib_file is not None:
-        clang.cindex.Config.set_library_file(lib_file)
-        break
+found = False
+if platform.system() == 'Darwin':
+    libclangs = [
+        '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib',
+        '/Library/Developer/CommandLineTools/usr/lib/libclang.dylib'
+    ]
+    for libclang in libclangs:
+        if os.path.exists(libclang):
+            clang.cindex.Config.set_library_path(os.path.dirname(libclang))
+            found = True
+            break
+
+if not found:
+    for version in ([None] + ["-3.{minor}".format(minor=minor)
+                              for minor in range(2, 9)]):
+        lib_name = 'clang'
+        if version is not None:
+            lib_name += version
+        lib_file = ctypes.util.find_library(lib_name)
+        if lib_file is not None:
+            clang.cindex.Config.set_library_file(lib_file)
+            break
 
 def config_section_to_dict(config, section, defaults=None):
     """Create a dict from a section of config"""
