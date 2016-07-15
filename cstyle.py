@@ -34,6 +34,7 @@ if not found:
             clang.cindex.Config.set_library_file(lib_file)
             break
 
+
 def config_section_to_dict(config, section, defaults=None):
     """Create a dict from a section of config"""
     _dict = {} if defaults is None else defaults
@@ -44,10 +45,12 @@ def config_section_to_dict(config, section, defaults=None):
         pass
     return _dict
 
+
 def node_is_variable(node):
     """Is node a variable / param declaration?"""
     return (node.kind == clang.cindex.CursorKind.VAR_DECL or
             node.kind == clang.cindex.CursorKind.PARM_DECL)
+
 
 def node_is_pointer(node, arrays_are_pointers):
     """Is node a pointer?"""
@@ -55,6 +58,7 @@ def node_is_pointer(node, arrays_are_pointers):
             node.type and (node.type.spelling.count('*') +
                            (node.type.spelling.count('[')
                             if arrays_are_pointers else 0)) > 0)
+
 
 class CStyle(object):
     """CStyle checker"""
@@ -80,7 +84,7 @@ class CStyle(object):
                 'type': bool,
                 'default': False,
                 'doc': ('If a variable is an array, treat it as a pointer\n'
-                'for `pointer_prefix` and related checks.')
+                        'for `pointer_prefix` and related checks.')
             },
             'prefer_goto': {
                 'type': bool,
@@ -131,8 +135,8 @@ class CStyle(object):
         """Do pointer_prefix related checks on node."""
         invalid = False
         reason = ''
-        if (self.options['pointer_prefix'] != '' and
-            node_is_pointer(node, self.options['arrays_are_pointers'])):
+        if ((self.options['pointer_prefix'] != '' and
+             node_is_pointer(node, self.options['arrays_are_pointers']))):
             prefix = self.options['pointer_prefix']
             type_ = node.type.spelling
             count = len(prefix)
