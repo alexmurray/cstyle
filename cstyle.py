@@ -174,7 +174,7 @@ class CStyle(object):
                 self._n_returns = 0
             elif node.kind == clang.cindex.CursorKind.RETURN_STMT:
                 self._n_returns = self._n_returns + 1
-            invalid = self._n_returns > 1
+                invalid = self._n_returns > 1
             if invalid:
                 reason = 'Only 1 return statement per function (prefer_goto)'
         return invalid, reason, name
