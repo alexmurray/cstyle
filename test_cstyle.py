@@ -88,10 +88,6 @@ class CStyleTestSuite(unittest.TestSuite):
                      {'column': 5,
                       'file': os.path.join(base, '0004_prefer_goto.c'),
                       'line': 8,
-                      'reason': 'Only 1 return statement per function (prefer_goto)'},
-                     {'column': 12,
-                      'file': os.path.join(base, '0004_prefer_goto.c'),
-                      'line': 8,
                       'reason': 'Only 1 return statement per function (prefer_goto)'}
                  ],
                  '0005_arrays_are_pointers':
