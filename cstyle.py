@@ -14,7 +14,8 @@ import platform
 found = False
 if platform.system() == 'Darwin':
     libclangs = [
-        '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib',
+        '/Applications/Xcode.app/Contents/Developer/Toolchains/'
+        'XcodeDefault.xctoolchain/usr/lib/libclang.dylib',
         '/Library/Developer/CommandLineTools/usr/lib/libclang.dylib'
     ]
     for libclang in libclangs:
@@ -276,6 +277,7 @@ def main():
                                               column=error['column'],
                                               reason=error['reason']) + '\n')
     return 1 if len(errors) > 0 else 0
+
 
 if __name__ == '__main__':
     sys.exit(main())
