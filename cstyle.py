@@ -143,7 +143,7 @@ class CStyle(object):
             if self.options['pointer_prefix_repeat']:
                 count = type_.count('*')
                 if self.options['arrays_are_pointers']:
-                    count +=  type_.count('[')
+                    count += type_.count('[')
                 prefix = prefix * count
             invalid = not name.startswith(prefix)
             if invalid:
@@ -245,6 +245,7 @@ class CStyle(object):
             config += '{kind}: {pattern}\n'.format(kind=kind.name.lower(),
                                                    pattern=pattern.pattern)
         return config
+
 
 def main():
     """Run cstyle"""
