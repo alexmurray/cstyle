@@ -10,8 +10,8 @@ union_decl: [A-Z][A-Za-z0-9_]+
 enum_decl: [A-Z][A-Za-z0-9_]+
 function_decl: (main|[A-Z][A-Za-z0-9_]+)
 # allow lower-case i,j,k or CamelCase possibly preceded by (multiple?) _
-var_decl: ([ijk]|_*[A-Z][A-Za-z0-9_]+)
-parm_decl: ([ijk]|_*[A-Z][A-Za-z0-9_]+)
+var_decl: ([ijk]|_*([A-Z]|[A-Za-z0-9_]+))
+parm_decl: ([ijk]|_*([A-Z]|[A-Za-z0-9_]+))
 # enum typedef has e prefix, functions have f, otherwise should have t prefix
 typedef_decl: [eft][A-Z][A-Za-z0-9_]+
 label_stmt: [A-Z][A-Za-z0-9_]+
