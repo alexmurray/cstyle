@@ -110,9 +110,18 @@ class CStyleTestSuite(unittest.TestSuite):
                  ],
                  '0008_dont_ignore_leading_underscores':
                  [
-                     {'column': 13, 'line': 1, 'reason': '"_Baz" is invalid - failed pattern check "[A-Z][A-Za-z_]+"', 'file': '/home/amurray/cstyle/test/0008_dont_ignore_leading_underscores.c'},
-                     {'column': 14, 'line': 6, 'reason': '"_Argc" is invalid - failed pattern check "[A-Z][A-Za-z_]+"', 'file': '/home/amurray/cstyle/test/0008_dont_ignore_leading_underscores.c'},
-                     {'column': 28, 'line': 6, 'reason': '"_pArgv" is invalid - expected pointer prefix "p"', 'file': '/home/amurray/cstyle/test/0008_dont_ignore_leading_underscores.c'}
+                     {'column': 13,
+                      'file': os.path.join(base, '0008_dont_ignore_leading_underscores.c'),
+                      'line': 1,
+                      'reason': '"_Baz" is invalid - failed pattern check "[A-Z][A-Za-z_]+"'},
+                     {'column': 14,
+                      'file': os.path.join(base, '0008_dont_ignore_leading_underscores.c'),
+                      'line': 6,
+                      'reason': '"_Argc" is invalid - failed pattern check "[A-Z][A-Za-z_]+"'},
+                     {'column': 28,
+                      'file': os.path.join(base, '0008_dont_ignore_leading_underscores.c'),
+                      'line': 6,
+                      'reason': '"_pArgv" is invalid - expected pointer prefix "p"'}
                  ]
         }
         for (basename, expected_errors) in tests.iteritems():
