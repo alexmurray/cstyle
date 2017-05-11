@@ -48,6 +48,10 @@ specified using the `--config` command-line option.
 
 The configuration file supports some basic options in the `Options` section:
 
+ * `ignore_leading_underscores` - If set to `true` ignore any leading
+   underscores in variable and function names - these will be stripped before
+   checking for any possible `pointer_prefix` or name format etc.
+
  * `prefer_goto` - If set to `true`, will warn when multiple `return` statements
    exist in a single function. However, if set to `false` will warn about *any*
    use of `goto` at all.
@@ -60,6 +64,10 @@ The configuration file supports some basic options in the `Options` section:
    then the `pointer_prefix` is expected to be repeated by the depth of the
    pointer. i.e. for the argument `char **ppArgv`, `pointer_prefix` should be
    set to `p` and `pointer_prefix_repeat` should be `true`.
+
+ * `arrays_are_pointers` - If a variable is an array, treat it as a pointer for
+   `pointer_prefix` and related checks.
+
 
 Rules for naming variables are specified in the `Rules` section - these specify
 a libclang kind and the associated regular expression to validate the name. For

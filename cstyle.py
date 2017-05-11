@@ -75,7 +75,9 @@ class CStyle(object):
                 'type': bool,
                 'default': False,
                 'doc': ('If set to `true` ignore any leading underscores\n'
-                        'in variable and function names.')
+                        'in variable and function names - these will be\n'
+                        'stripped before checking for any possible pointer\n'
+                        'prefix or name format etc.\n')
             },
             'pointer_prefix': {
                 'type': str,
