@@ -1,4 +1,5 @@
 [Options]
+ignore_leading_underscores: true
 pointer_prefix: p
 pointer_prefix_repeat: true
 arrays_are_pointers: false
