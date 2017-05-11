@@ -47,6 +47,12 @@ def config_section_to_dict(config, section, defaults=None):
     return _dict
 
 
+def node_is_variable_or_function(node):
+    """Is node a variable / param declaration?"""
+    return (node_is_variable(node) or
+            node.kind == clang.cindex.CursorKind.FUNCTION_DECL)
+
+
 def node_is_variable(node):
     """Is node a variable / param declaration?"""
     return (node.kind == clang.cindex.CursorKind.VAR_DECL or
@@ -65,6 +71,12 @@ class CStyle(object):
     """CStyle checker"""
     def __init__(self, config_file=None, files=None):
         self.options_map = {
+            'ignore_leading_underscores': {
+                'type': bool,
+                'default': False,
+                'doc': ('If set to `true` ignore any leading underscores\n'
+                        'in variable and function names.')
+            },
             'pointer_prefix': {
                 'type': str,
                 'default': '',
@@ -97,7 +109,8 @@ class CStyle(object):
             }
         }
         # checks to perform on each node in this order
-        self.checks = [self.check_pointer_prefix,
+        self.checks = [self.check_ignore_leading_underscores,
+                       self.check_pointer_prefix,
                        self.check_prefer_goto,
                        self.check_goto_harmful,
                        self.check_rules]
@@ -131,6 +144,15 @@ class CStyle(object):
     def local(self, node):
         """Check if node refers to a local file."""
         return node.location.file and node.location.file.name in self.files
+
+    def check_ignore_leading_underscores(self, node, name):
+        """Do ignore_leading_underscores related checks on node."""
+        if ((self.options['ignore_leading_underscores'] and
+             node_is_variable_or_function(node))):
+            while name.startswith('_'):
+                # strip all leading underscores
+                name = name[1:]
+        return False, '', name
 
     def check_pointer_prefix(self, node, name):
         """Do pointer_prefix related checks on node."""
