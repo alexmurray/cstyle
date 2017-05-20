@@ -26,7 +26,7 @@ if platform.system() == 'Darwin':
 
 if not found:
     for version in ([None] + ["-3.{minor}".format(minor=minor)
-                              for minor in range(2, 9)]):
+                              for minor in range(9, 2, -1)]):
         lib_name = 'clang'
         if version is not None:
             lib_name += version
