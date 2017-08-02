@@ -122,7 +122,12 @@ class CStyleTestSuite(unittest.TestSuite):
                       'file': os.path.join(base, '0008_dont_ignore_leading_underscores.c'),
                       'line': 6,
                       'reason': '"_pArgv" is invalid - expected pointer prefix "p"'}
-                 ]
+                 ],
+                 '0009_ignore_goto':
+                 [
+
+                 ],
+
         }
         for (basename, expected_errors) in tests.iteritems():
             test = CStyleTestCase('runTest', basename, expected_errors)

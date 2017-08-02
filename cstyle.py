@@ -102,6 +102,12 @@ class CStyle(object):
                 'doc': ('If a variable is an array, treat it as a pointer\n'
                         'for `pointer_prefix` and related checks.')
             },
+            'ignore_goto': {
+                'type': bool,
+                'default': False,
+                'doc': ('If set to `true`, will ignore all gotos - disables\n'
+                        '`prefer_goto` checking.')
+            },
             'prefer_goto': {
                 'type': bool,
                 'default': False,
@@ -185,7 +191,7 @@ class CStyle(object):
         """Check on any use of goto for node."""
         invalid = False
         reason = ''
-        if not self.options['prefer_goto']:
+        if not self.options['ignore_goto'] and not self.options['prefer_goto']:
             invalid = (node.kind == clang.cindex.CursorKind.GOTO_STMT)
             if invalid:
                 reason = 'goto considered harmful'
@@ -195,7 +201,7 @@ class CStyle(object):
         """Perform prefer_goto check on node."""
         invalid = False
         reason = ''
-        if self.options['prefer_goto']:
+        if not self.options['ignore_goto'] and self.options['prefer_goto']:
             if node.kind == clang.cindex.CursorKind.FUNCTION_DECL:
                 self._n_returns = 0
             elif node.kind == clang.cindex.CursorKind.RETURN_STMT:

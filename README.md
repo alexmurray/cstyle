@@ -52,6 +52,9 @@ The configuration file supports some basic options in the `Options` section:
    underscores in variable and function names - these will be stripped before
    checking for any possible `pointer_prefix` or name format etc.
 
+ * `ignore_goto` - If set to `true`, will ignore all gotos - disables
+   `prefer_goto` checking.
+
  * `prefer_goto` - If set to `true`, will warn when multiple `return` statements
    exist in a single function. However, if set to `false` will warn about *any*
    use of `goto` at all.
