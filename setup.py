@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 This module defines the attributes of the PyPI package for cstyle
 """

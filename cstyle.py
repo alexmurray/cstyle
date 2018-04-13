@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """cstyle C/C++ style checker based on libclang"""
 
 import argparse
-import ConfigParser
+import configparser
 import clang.cindex
 import ctypes.util
 import os
@@ -43,7 +43,7 @@ def config_section_to_dict(config, section, defaults=None):
     try:
         for (name, value) in config.items(section):
             _dict[name] = value
-    except ConfigParser.NoSectionError:
+    except configparser.NoSectionError:
         pass
     return _dict
 
@@ -125,15 +125,15 @@ class CStyle(object):
                        self.check_rules]
         kinds = {kind.name.lower(): kind
                  for kind in clang.cindex.CursorKind.get_all_kinds()}
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         if config_file is not None:
             config.read(config_file)
             rules = config_section_to_dict(config, 'Rules')
             self.rules_db = {kinds[kind]: re.compile(pattern)
-                             for (kind, pattern) in rules.items()}
+                             for (kind, pattern) in list(rules.items())}
         else:
             self.rules_db = {kinds[kind]: re.compile('^.*$')
-                             for kind in kinds.keys()}
+                             for kind in list(kinds.keys())}
         self.options = self.parse_options(config)
         self.files = files if files is not None else []
         self._n_returns = 0
@@ -141,7 +141,7 @@ class CStyle(object):
     def parse_options(self, config):
         """Parse Options section of config."""
         options = {}
-        for name, option in self.options_map.iteritems():
+        for name, option in list(self.options_map.items()):
             get = 'get'
             if option['type'] is bool:
                 get = 'getboolean'
@@ -263,7 +263,7 @@ class CStyle(object):
         config = ''
         # Options
         config += '[Options]\n'
-        for (name, option) in self.options_map.iteritems():
+        for (name, option) in list(self.options_map.items()):
             default = option['default']
             if option['type'] is bool:
                 default = str(default).lower()
@@ -273,7 +273,7 @@ class CStyle(object):
                                                    default=default)
             config += '\n'
         config += '[Rules]\n'
-        for (kind, pattern) in self.rules_db.iteritems():
+        for (kind, pattern) in list(self.rules_db.items()):
             config += '{kind}: {pattern}\n'.format(kind=kind.name.lower(),
                                                    pattern=pattern.pattern)
         return config
