@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Unit tests for cstyle.
 """
@@ -129,7 +129,7 @@ class CStyleTestSuite(unittest.TestSuite):
                  ],
 
         }
-        for (basename, expected_errors) in tests.iteritems():
+        for (basename, expected_errors) in list(tests.items()):
             test = CStyleTestCase('runTest', basename, expected_errors)
             self.addTest(test)
         self.addTest(CStyleGenerateConfigTestCase())

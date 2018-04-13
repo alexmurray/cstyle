@@ -1,15 +1,19 @@
 sudo: required
 dist: trusty
 language: python
+python:
+  - "3.6.1"
 
 install:
-  - "sudo apt-get update"
-  - "sudo apt-get install -qq libclang-3.5-dev"
-  - "pip install clang==3.5"
-  - "pip install coveralls"
+  - sudo apt-add-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main" --yes
+  - sudo apt-add-repository "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu trusty main"  --yes
+  - sudo apt-get update
+  - sudo apt-get install -qq --allow-unauthenticated libclang-5.0-dev
+  - pip3 install clang==5.0
+  - pip3 install coveralls
 
 script:
-  - coverage run --source=cstyle.py setup.py test
+  - coverage run --include=cstyle.py setup.py test
 
 after_success:
   - coveralls
