@@ -85,7 +85,7 @@ written in snake_case.
 
 ## Requirements
 
-* python2.7
+* python3
 * python-clang
 
 ## Emacs Integration
