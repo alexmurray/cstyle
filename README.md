@@ -16,7 +16,7 @@ rules.
 
     git clone https://github.com/alexmurray/cstyle.git
     cd cstyle
-    pip install .
+    pip3 install .
     cstyle --generate-config > ~/.cstyle
     # edit ~/.cstyle as required
 
